@@ -26,6 +26,7 @@
 #include "sb6.h"
 
 sb6::application * sb6::application::app = 0;
+GLFWwindow* sb6::application::window = 0;
 
 #include <GL/glext.h>
 

@@ -33,31 +33,31 @@
     #define WIN32_LEAN_AND_MEAN 1
     #include <Windows.h>
 
-    #ifdef _DEBUG
-        #ifdef _WIN64
-            #pragma comment (lib, "GLFW_d64.lib")
-            #ifndef IN_SB6_LIB
-                #pragma comment (lib, "sb6_d64.lib")
-            #endif
-        #else
-            #pragma comment (lib, "GLFW_d32.lib")
-            #ifndef IN_SB6_LIB
-                #pragma comment (lib, "sb6_d32.lib")
-            #endif
-        #endif
-    #else
-        #ifdef _WIN64
-            #pragma comment (lib, "GLFW_r64.lib")
-            #ifndef IN_SB6_LIB
-                #pragma comment (lib, "sb6_r64.lib")
-            #endif
-        #else
-            #pragma comment (lib, "GLFW_r32.lib")
-            #ifndef IN_SB6_LIB
-                #pragma comment (lib, "sb6_r32.lib")
-            #endif
-        #endif
-    #endif
+//     #ifdef _DEBUG
+//         #ifdef _WIN64
+//             #pragma comment (lib, "GLFW_d64.lib")
+//             #ifndef IN_SB6_LIB
+//                 #pragma comment (lib, "sb6_d64.lib")
+//             #endif
+//         #else
+//             #pragma comment (lib, "GLFW_d32.lib")
+//             #ifndef IN_SB6_LIB
+//                 #pragma comment (lib, "sb6_d32.lib")
+//             #endif
+//         #endif
+//     #else
+//         #ifdef _WIN64
+//             #pragma comment (lib, "GLFW_r64.lib")
+//             #ifndef IN_SB6_LIB
+//                 #pragma comment (lib, "sb6_r64.lib")
+//             #endif
+//         #else
+//             #pragma comment (lib, "GLFW_r32.lib")
+//             #ifndef IN_SB6_LIB
+//                 #pragma comment (lib, "sb6_r32.lib")
+//             #endif
+//         #endif
+//     #endif
 
     #pragma comment (lib, "OpenGL32.lib")
 #endif
@@ -92,6 +92,10 @@ public:
             return;
         }
 
+        glfwSetErrorCallback([](int error, const char* description){
+          fprintf(stderr, description);
+        });
+
         init();
 
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, info.majorVersion);
@@ -118,23 +122,23 @@ public:
         }
         else
         {
-			window = glfwCreateWindow(info.windowWidth, info.windowHeight, info.title, nullptr, nullptr);
+            window = glfwCreateWindow(info.windowWidth, info.windowHeight, info.title, nullptr, nullptr);
         }
 
-		if (!window) {
-			fprintf(stderr, "Failed to open window\n");
-			return;
-		}
+        if (!window) {
+            fprintf(stderr, "Failed to open window\n");
+            return;
+        }
 
-
+        glfwMakeContextCurrent(window);
         glfwSetWindowSizeCallback(window, &glfw_onResize);
         glfwSetKeyCallback(window, &glfw_onKey);
         glfwSetMouseButtonCallback(window, &glfw_onMouseButton);
         glfwSetCursorPosCallback(window, &glfw_onMouseMove);
         glfwSetScrollCallback(window, &glfw_onMouseWheel);
-		glfwSetInputMode(window, GLFW_CURSOR, info.flags.cursor ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_HIDDEN);
+        glfwSetInputMode(window, GLFW_CURSOR, info.flags.cursor ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_HIDDEN);
 
-        info.flags.stereo = (glfwGetWindowAttrib(window, GLFW_STEREO) ? 1 : 0);
+        //info.flags.stereo = (glfwGetWindowAttrib(window, GLFW_STEREO) ? 1 : 0);
 
         gl3wInit();
 
@@ -160,8 +164,10 @@ public:
 
         startup();
 
-        while (running && window)
+        while (running && window && !glfwWindowShouldClose(window))
         {
+            glfwPollEvents();
+
             render(glfwGetTime());
 
             glfwSwapBuffers(window);
@@ -282,7 +288,7 @@ public:
 protected:
     APPINFO     info;
     static      sb6::application * app;
-	static 		GLFWwindow* window;
+    static      GLFWwindow* window;
 
 
     static void glfw_onResize(GLFWwindow* window, int w, int h)
